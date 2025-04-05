@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 240 100% 99%;
+    --foreground: 240 5% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 5% 15%;
+    --popover: 240 20% 98%;
+    --popover-foreground: 240 5% 12%;
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 20% 92%;
+    --secondary-foreground: 240 10% 20%;
+    --muted: 240 20% 94%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 270 80% 70%;
+    --accent-foreground: 0 0% 15%;
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 10% 85%;
+    --input: 240 10% 80%;
+    --ring: 220 90% 50%;
+  }
+
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 95%;
+    --card: 240 15% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 220 80% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 15% 18%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 240 20% 16%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 280 70% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 40%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 240 15% 20%;
+    --input: 240 10% 25%;
+    --ring: 220 90% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.info-window-content {
+  width: 250px;
+  /* padding: 8px; */
+  text-align: center;
+}
+
+.gm-style .gm-style-iw-c {
+  padding: 12px !important;
+  border-radius: 8px !important;
+  text-align: center !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+
+.gm-style .gm-style-iw {
+  text-align: center !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0) 51%,
+    rgba(255, 255, 255, 0) 100%
+  ) !important;
+}
