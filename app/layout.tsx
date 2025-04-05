@@ -24,7 +24,7 @@ export default function Layout({
       <body className={inter.className}>
         <ThemeProvider
           attribute='class'
-          defaultTheme='dark'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >
