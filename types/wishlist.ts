@@ -16,7 +16,7 @@ export interface WishlistItem {
 export interface WishlistResponse {
   success: boolean
   message?: string
-  items: WishlistItem[]
+  items?: WishlistItem[]
 }
 
 export interface AddToWishlistRequest {
@@ -26,7 +26,7 @@ export interface AddToWishlistRequest {
 export interface AddToWishlistResponse {
   success: boolean
   message?: string
-  item: WishlistItem
+  item?: WishlistItem
 }
 
 export interface RemoveFromWishlistRequest {
