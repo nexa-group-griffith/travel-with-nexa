@@ -7,7 +7,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/lib/use-auth';
 import { UserNav } from '@/components/user-nav';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DialogTitle } from './ui/dialog';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -22,14 +21,6 @@ export default function Header() {
   }, [pathname]);
   return (
     <header className='sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-      {/* {error && (
-        <Alert
-          variant='destructive'
-          className='rounded-none'
-        >
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )} */}
       <div className='container flex h-16 items-center justify-between'>
         <div className='flex items-center gap-6 md:gap-10'>
           <Link

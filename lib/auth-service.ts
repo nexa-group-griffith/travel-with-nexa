@@ -13,6 +13,7 @@ import type {
   UserData,
 } from '@/types/auth';
 import {
+  addUserDataToLocalStorage,
   getUserDataFromLocalStorage,
   removeUserDataFromLocalStorage,
 } from './localstorage';
@@ -20,34 +21,80 @@ import {
 export const authService = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     try {
-      const response = await apiClient.post<LoginResponse>(
-        '/api/auth/login',
-        data
+      console.log('Attempting login with:', {
+        email: data.email,
+        passwordProvided: !!data.password,
+      });
+
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      const { auth, db } = await import('@/lib/firebase');
+      const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
       );
+      const user = userCredential.user;
+      console.log('Firebase auth successful:', user.uid);
 
-      if (response.success && response.data && response.data.token) {
-        // Store token in localStorage
-        localStorage.setItem('auth-token', response.data.token);
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      console.log('User data retrieved from Firestore');
 
-        // Store user data
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
+      await updateDoc(doc(db, 'users', user.uid), {
+        lastLoginAt: new Date().toISOString(),
+      }).catch((err) => console.warn('Failed to update last login time:', err));
+
+      const token = await user.getIdToken(true);
+      console.log('Token generated successfully');
+
+      localStorage.setItem('auth-token', token);
+
+      const userDataToStore = {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || userData.displayName || '',
+        photoURL: user.photoURL || userData.photoURL || '',
+        emailVerified: user.emailVerified,
+        createdAt: userData.createdAt || new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        bio: userData.bio || '',
+        location: userData.location || '',
+        phoneNumber: userData.phoneNumber || '',
+      };
+
+      addUserDataToLocalStorage(userDataToStore);
+      console.log('User data stored in localStorage');
+
+      return {
+        success: true,
+        message: 'Login successful',
+        user: userDataToStore,
+        token,
+      };
+    } catch (error: any) {
+      console.error('Login error:', error);
+
+      let errorMessage = 'Failed to log in';
+
+      if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid email or password';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed login attempts. Please try again later';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your connection';
+      } else if (error.code) {
+        errorMessage = `Authentication error: ${error.code}`;
       }
 
-      return (
-        response.data || {
-          success: response.success,
-          message: response.message,
-          user: {} as UserData,
-          token: '',
-        }
-      );
-    } catch (error) {
-      console.error('Login error:', error);
       return {
         success: false,
-        message: (error as Error).message || 'Failed to login',
+        message: errorMessage,
         user: {} as UserData,
         token: '',
       };

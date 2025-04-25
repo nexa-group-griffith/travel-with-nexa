@@ -39,12 +39,10 @@ export default function DashboardPage() {
     }
     setUser(userData);
 
-    // Fetch user data
     const fetchUserData = async () => {
       try {
         setLoading(true);
 
-        // Fetch trips
         const tripsResponse = await tripsService.getAllTrips();
         if (tripsResponse.success) {
           setTrips(tripsResponse.trips);
@@ -56,7 +54,6 @@ export default function DashboardPage() {
           });
         }
 
-        // Fetch wishlist
         const wishlistResponse = await wishlistService.getWishlist();
         if (wishlistResponse.success) {
           setWishlist(wishlistResponse.items ?? []);
