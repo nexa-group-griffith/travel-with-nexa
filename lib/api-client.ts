@@ -54,7 +54,6 @@ async function fetchApi<T>(
     const url = `${API_BASE_URL}${endpoint}`;
     const response = await fetch(url, requestOptions);
 
-    // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       if (!response.ok) {

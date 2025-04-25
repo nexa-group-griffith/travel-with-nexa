@@ -16,6 +16,7 @@ export interface ProfileUpdateData {
   bio?: string;
   location?: string;
   phoneNumber?: string;
+  photoURL?: string;
 }
 
 export const profileService = {

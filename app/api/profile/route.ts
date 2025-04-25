@@ -71,7 +71,7 @@ export async function PUT(request: NextRequest) {
       );
     }
     const data = await request.json();
-    const { displayName, bio, location, phoneNumber } = data;
+    const { displayName, bio, location, phoneNumber, photoURL } = data;
 
     await updateDoc(doc(db, 'users', userId), {
       displayName: displayName || '',
@@ -79,6 +79,7 @@ export async function PUT(request: NextRequest) {
       location,
       phoneNumber,
       updatedAt: new Date().toISOString(),
+      ...(photoURL && { photoURL }),
     });
 
     return NextResponse.json({

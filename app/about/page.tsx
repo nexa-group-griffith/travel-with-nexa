@@ -43,7 +43,6 @@ export default function AboutPage() {
 
   return (
     <div className='container mx-auto px-4 py-12'>
-      {/* Hero Section */}
       <section className='mb-16 text-center'>
         <h1 className='mb-4 text-4xl font-bold tracking-tight sm:text-5xl'>
           About Nexa Group
@@ -54,7 +53,6 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* Our Story */}
       <section className='mb-16 grid gap-8 md:grid-cols-2 md:items-center'>
         <div>
           <h2 className='mb-4 text-3xl font-bold'>Our Story</h2>
@@ -77,15 +75,14 @@ export default function AboutPage() {
         </div>
         <div className='relative h-[600px] overflow-hidden rounded-lg shadow-xl'>
           <Image
-            src='/favicon.ico?height=600&width=600'
+            src='/favicon.ico'
             alt='Travel planning'
             fill
-            className='object-cover rounded-lg'
+            className='object-cover'
           />
         </div>
       </section>
 
-      {/* Our Mission & Values */}
       <section className='mb-16'>
         <h2 className='mb-8 text-center text-3xl font-bold'>
           Our Mission & Values
@@ -130,14 +127,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Team */}
       <section className='mb-16'>
         <h2 className='mb-8 text-center text-3xl font-bold'>Meet Our Team</h2>
         <div className='grid gap-8 sm:grid-cols-2 lg:grid-cols-4'>
           {[
             {
               name: 'Davendra Pandhigunta',
-              image: '/placeholder.webp?height=400&width=400',
+              image: 'dev.jpg?height=400&width=400',
+            },
+            {
+              name: 'Siddharth Pampana',
+              image: 'sid.jpeg?height=330&width=330',
+            },
+            {
+              name: 'Gopi Naga Seetha Kumari Paruchuri',
+              image: 'seetha.jpeg?height=400&width=400',
             },
             {
               name: 'Olokunola Hassan Taiwo',
@@ -151,10 +155,7 @@ export default function AboutPage() {
               name: 'Ece Naz Olmez',
               image: '/placeholder.webp?height=400&width=400',
             },
-            {
-              name: 'Gopi Naga Seetha Kumari Paruchuri',
-              image: '/placeholder.webp?height=400&width=400',
-            },
+
             {
               name: 'Rithal Niranjan Oswal',
               image: '/placeholder.webp?height=400&width=400',
@@ -172,10 +173,6 @@ export default function AboutPage() {
               name: 'Sadhvika Padmasetti',
               image: '/placeholder.webp?height=400&width=400',
             },
-            {
-              name: 'Siddharth Pampana',
-              image: '/placeholder.webp?height=400&width=400',
-            },
           ].map((member, index) => (
             <div
               key={index}
@@ -183,13 +180,11 @@ export default function AboutPage() {
             >
               <div className='mx-auto mb-4 h-40 w-40 overflow-hidden rounded-full'>
                 <Image
-                  src={
-                    'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSzFdnP5HxN_46aU-vPYfx_aGnRs570h58Ms-CcHqqSqc0wekNSm4mkZkaWlOWsFYULa_LbPVdJihNbnA7O_duG8g'
-                  }
+                  src={member.image || ''}
                   alt={member.name}
                   width={160}
                   height={160}
-                  className='h-full w-full object-cover'
+                  className='h-full w-full object-cover object-top'
                 />
               </div>
               <h3 className='mb-1 text-xl font-semibold'>{member.name}</h3>
@@ -198,7 +193,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Features */}
       <section className='mb-16'>
         <h2 className='mb-8 text-center text-3xl font-bold'>
           What Makes Us Different
@@ -323,48 +317,6 @@ export default function AboutPage() {
         </Tabs>
       </section>
 
-      {/* Contact */}
-      {/* <section className='mb-16'>
-        <h2 className='mb-8 text-center text-3xl font-bold'>Get In Touch</h2>
-        <div className='grid gap-8 md:grid-cols-2'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-              <CardDescription>
-                Have questions or feedback? We'd love to hear from you.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='flex items-center gap-3'>
-                <Mail className='h-5 w-5 text-primary' />
-                <span>support@travelbuddy.com</span>
-              </div>
-              <div className='flex items-center gap-3'>
-                <Phone className='h-5 w-5 text-primary' />
-                <span>+1 (555) 123-4567</span>
-              </div>
-              <div className='flex items-center gap-3'>
-                <MapPin className='h-5 w-5 text-primary' />
-                <span>123 Travel Lane, San Francisco, CA 94107</span>
-              </div>
-            </CardContent>
-          </Card>
-          <div className='flex flex-col justify-center'>
-            <p className='mb-6 text-muted-foreground'>
-              We're always looking to improve TravelBuddy and would love to hear
-              your suggestions or answer any questions you might have.
-            </p>
-            <Button
-              asChild
-              size='lg'
-              className='w-full sm:w-auto'
-            >
-              <Link href='/contact'>Contact Us</Link>
-            </Button>
-          </div>
-        </div>
-      </section> */}
-
       {!user ? (
         <section className='rounded-lg bg-primary/10 p-8 text-center'>
           <h2 className='mb-4 text-3xl font-bold'>
@@ -393,13 +345,11 @@ export default function AboutPage() {
         </section>
       ) : null}
 
-      {/* Technologies Section */}
       <section className='mb-16'>
         <h2 className='mb-8 text-center text-3xl font-bold'>
           Technologies We Use
         </h2>
         <div className='grid gap-8 md:grid-cols-3'>
-          {/* Frontend */}
           <Card>
             <CardHeader>
               <div className='mb-2 flex items-center'>
@@ -549,7 +499,6 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          {/* Backend */}
           <Card>
             <CardHeader>
               <div className='mb-2 flex items-center'>
@@ -660,7 +609,6 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          {/* APIs & Services */}
           <Card>
             <CardHeader>
               <div className='mb-2 flex items-center'>

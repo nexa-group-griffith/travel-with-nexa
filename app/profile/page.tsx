@@ -41,6 +41,7 @@ import {
 } from '@/lib/profile-service';
 import { getCurrentUser } from '@/lib/auth-helpers';
 import { auth, storage } from '@/lib/firebase';
+import { updateProfile } from 'firebase/auth';
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -138,12 +139,24 @@ export default function ProfilePage() {
 
     try {
       const response = await uploadPhoto();
-
       if (response) {
         setProfileData({
           ...profileData,
           photoURL: response.toString(),
         });
+        await updateProfile(auth.currentUser!, {
+          photoURL: response.toString(),
+        });
+
+        const updateData: ProfileUpdateData = {
+          displayName: profileData.displayName,
+          bio: profileData.bio,
+          location: profileData.location,
+          phoneNumber: profileData.phoneNumber,
+          photoURL: response.toString(),
+        };
+
+        await profileService.updateProfile(updateData);
         setNewPhoto(null);
         toast({
           title: 'Profile photo updated',
@@ -176,7 +189,24 @@ export default function ProfilePage() {
     setSaving(true);
     setError(null);
 
+    console.log(
+      'Saving profile data:',
+      profileData,
+      profileData.phoneNumber.length !== 10,
+      !/^\d+$/.test(profileData.phoneNumber)
+    );
     try {
+      if (
+        (profileData.phoneNumber && profileData.phoneNumber.length !== 10) ||
+        !/^\d+$/.test(profileData.phoneNumber)
+      ) {
+        toast({
+          title: 'Invalid Phone Number',
+          description: 'Please enter a valid phone number.',
+          variant: 'destructive',
+        });
+        return;
+      }
       if (newPhoto) {
         await handleUploadPhoto();
       }
@@ -186,6 +216,7 @@ export default function ProfilePage() {
         bio: profileData.bio,
         location: profileData.location,
         phoneNumber: profileData.phoneNumber,
+        photoURL: profileData.photoURL,
       };
 
       const response = await profileService.updateProfile(updateData);
@@ -310,6 +341,7 @@ export default function ProfilePage() {
                           : profileData.photoURL
                       }
                       alt={profileData.displayName || 'User'}
+                      className='h-40 w-40 rounded-full object-cover object-top'
                     />
                   ) : (
                     <AvatarFallback>
