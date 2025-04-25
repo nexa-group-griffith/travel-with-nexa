@@ -18,29 +18,29 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (pathname === '/') {
-    return !isAuthenticated
-      ? NextResponse.redirect(new URL('/home', request.url))
-      : NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // if (pathname === '/') {
+  //   return !isAuthenticated
+  //     ? NextResponse.redirect(new URL('/home', request.url))
+  //     : NextResponse.redirect(new URL('/dashboard', request.url));
+  // }
 
-  const isProtectedPath = protectedPaths.some((path) =>
-    pathname.startsWith(path)
-  );
+  // const isProtectedPath = protectedPaths.some((path) =>
+  //   pathname.startsWith(path)
+  // );
 
-  const isPublicOnlyPath = publicOnlyPaths.some((path) =>
-    pathname.startsWith(path)
-  );
+  // const isPublicOnlyPath = publicOnlyPaths.some((path) =>
+  //   pathname.startsWith(path)
+  // );
 
-  if (isProtectedPath && !isAuthenticated) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
+  // if (isProtectedPath && !isAuthenticated) {
+  //   const url = new URL('/login', request.url);
+  //   url.searchParams.set('redirect', pathname);
+  //   return NextResponse.redirect(url);
+  // }
 
-  if (isPublicOnlyPath && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // if (isPublicOnlyPath && isAuthenticated) {
+  //   return NextResponse.redirect(new URL('/dashboard', request.url));
+  // }
 
   return NextResponse.next();
 }

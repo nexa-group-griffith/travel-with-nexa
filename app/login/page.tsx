@@ -61,7 +61,7 @@ export default function LoginPage() {
           title: 'Login successful',
           description: 'Welcome back!',
         });
-        router.push(redirectPath);
+        router.push('/dashboard');
       } else {
         setError(response.message || 'Failed to log in');
         toast({
@@ -94,17 +94,13 @@ export default function LoginPage() {
       const { doc, setDoc, getDoc } = await import('firebase/firestore');
       const { auth, db } = await import('@/lib/firebase');
 
-      // Create Google auth provider
       const provider = new GoogleAuthProvider();
 
-      // Sign in with popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user already exists in Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
 
-      // Create or update user document
       const userData = {
         uid: user.uid,
         displayName: user.displayName || '',
@@ -119,7 +115,6 @@ export default function LoginPage() {
 
       await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
 
-      // Store token in localStorage
       const token = await user.getIdToken();
       localStorage.setItem('auth-token', token);
       addUserDataToLocalStorage(userData);
@@ -129,7 +124,6 @@ export default function LoginPage() {
         description: 'Welcome back!',
       });
 
-      // Redirect to dashboard or the redirect path
       router.push(redirectPath);
     } catch (error: any) {
       console.error('Google login error:', error);
