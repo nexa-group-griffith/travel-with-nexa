@@ -132,7 +132,7 @@ export default function AboutPage() {
         <div className='grid gap-8 sm:grid-cols-2 lg:grid-cols-4'>
           {[
             {
-              name: 'Davendra Pandhigunta',
+              name: 'Devendra Pandhigunta',
               image: 'dev.jpg?height=400&width=400',
             },
             {
@@ -140,12 +140,20 @@ export default function AboutPage() {
               image: 'sid.jpeg?height=330&width=330',
             },
             {
+              name: 'Olokunola Hassan Taiwo',
+              image: 'hassan.jpeg?height=400&width=400',
+            },
+            {
+              name: 'Rithal Niranjan Oswal',
+              image: 'rishika.jpeg?height=400&width=400',
+            },
+            {
               name: 'Gopi Naga Seetha Kumari Paruchuri',
               image: 'seetha.jpeg?height=400&width=400',
             },
             {
-              name: 'Olokunola Hassan Taiwo',
-              image: '/placeholder.webp?height=400&width=400',
+              name: 'Sadhvika Padmasetti',
+              image: 'sadhvika.jpeg?height=200&width=400',
             },
             {
               name: 'Osemwonken Godswill Osakue',
@@ -155,12 +163,6 @@ export default function AboutPage() {
               name: 'Ece Naz Olmez',
               image: '/placeholder.webp?height=400&width=400',
             },
-
-            {
-              name: 'Rithal Niranjan Oswal',
-              image: '/placeholder.webp?height=400&width=400',
-            },
-
             {
               name: 'Olokunola Hussein Kehinde',
               image: '/placeholder.webp?height=400&width=400',
@@ -169,14 +171,10 @@ export default function AboutPage() {
               name: 'Ayooluwa Oyebowale',
               image: '/placeholder.webp?height=400&width=400',
             },
-            {
-              name: 'Sadhvika Padmasetti',
-              image: '/placeholder.webp?height=400&width=400',
-            },
           ].map((member, index) => (
             <div
               key={index}
-              className='text-center'
+              className='text-center transition-all duration-300 transform hover:scale-105'
             >
               <div className='mx-auto mb-4 h-40 w-40 overflow-hidden rounded-full'>
                 <Image
