@@ -19,7 +19,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
@@ -30,6 +30,15 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   removeTopDestinationsFromLocalStorage,
   removeUserDataFromLocalStorage,
@@ -42,6 +51,8 @@ import {
 import { getCurrentUser } from '@/lib/auth-helpers';
 import { auth, storage } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
+import { countryCodes } from '@/lib/country-codes';
+import Flag from 'react-world-flags';
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -55,6 +66,7 @@ export default function ProfilePage() {
     bio: '',
     location: '',
     phoneNumber: '',
+    countryCode: '+1', // Default to US
     photoURL: '',
   });
 
@@ -64,6 +76,8 @@ export default function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [searchCountry, setSearchCountry] = useState('');
+  const [showCountrySearch, setShowCountrySearch] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -78,7 +92,10 @@ export default function ProfilePage() {
           const response = await profileService.getProfile();
           console.log('Profile response:', response);
           if (response.success && response.profile) {
-            setProfileData(response.profile);
+            setProfileData({
+              ...response.profile,
+              countryCode: response.profile.countryCode || '+1', // Default to US if not set
+            });
           } else {
             setError('Failed to load profile data. Please try again.');
             toast({
@@ -101,6 +118,7 @@ export default function ProfilePage() {
       getCurrentUser();
     }
   }, [user, authLoading, toast]);
+
   const uploadPhoto = async () => {
     if (!user || !newPhoto) return null;
 
@@ -108,6 +126,7 @@ export default function ProfilePage() {
     await uploadBytes(fileRef, newPhoto);
     return getDownloadURL(fileRef);
   };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -129,6 +148,13 @@ export default function ProfilePage() {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
+  };
+
+  const handleCountryCodeChange = (value: string) => {
+    setProfileData({
+      ...profileData,
+      countryCode: value,
+    });
   };
 
   const handleUploadPhoto = async () => {
@@ -153,6 +179,7 @@ export default function ProfilePage() {
           bio: profileData.bio,
           location: profileData.location,
           phoneNumber: profileData.phoneNumber,
+          countryCode: profileData.countryCode,
           photoURL: response.toString(),
         };
 
@@ -189,24 +216,18 @@ export default function ProfilePage() {
     setSaving(true);
     setError(null);
 
-    console.log(
-      'Saving profile data:',
-      profileData,
-      profileData.phoneNumber.length !== 10,
-      !/^\d+$/.test(profileData.phoneNumber)
-    );
     try {
-      if (
-        (profileData.phoneNumber && profileData.phoneNumber.length !== 10) ||
-        !/^\d+$/.test(profileData.phoneNumber)
-      ) {
+      // Validate phone number based on country
+      if (profileData.phoneNumber && !/^\d+$/.test(profileData.phoneNumber)) {
         toast({
           title: 'Invalid Phone Number',
-          description: 'Please enter a valid phone number.',
+          description: 'Please enter only digits for the phone number.',
           variant: 'destructive',
         });
+        setSaving(false);
         return;
       }
+
       if (newPhoto) {
         await handleUploadPhoto();
       }
@@ -216,6 +237,7 @@ export default function ProfilePage() {
         bio: profileData.bio,
         location: profileData.location,
         phoneNumber: profileData.phoneNumber,
+        countryCode: profileData.countryCode,
         photoURL: profileData.photoURL,
       };
 
@@ -246,6 +268,14 @@ export default function ProfilePage() {
       setSaving(false);
     }
   };
+
+  const filteredCountries = searchCountry
+    ? countryCodes.filter(
+        (country) =>
+          country.name.toLowerCase().includes(searchCountry.toLowerCase()) ||
+          country.dial_code.includes(searchCountry)
+      )
+    : countryCodes;
 
   if (authLoading || loading) {
     return (
@@ -419,13 +449,64 @@ export default function ProfilePage() {
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='phoneNumber'>Phone Number</Label>
-                  <Input
-                    id='phoneNumber'
-                    name='phoneNumber'
-                    value={profileData.phoneNumber}
-                    onChange={handleInputChange}
-                  />
+                  <div className='flex gap-2'>
+                    <Select
+                      value={profileData.countryCode}
+                      onValueChange={handleCountryCodeChange}
+                    >
+                      <SelectTrigger className='w-[140px]'>
+                        <SelectValue placeholder='Country Code' />
+                      </SelectTrigger>
+                      <SelectContent className='max-h-[300px] relative'>
+                        <div className='flex items-center px-3 py-2 border-b sticky top-0 z-10 backdrop-blur-sm'>
+                          <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
+                          <Input
+                            placeholder='Search country...'
+                            value={searchCountry}
+                            onChange={(e) => setSearchCountry(e.target.value)}
+                            className='h-8 border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0'
+                          />
+                        </div>
+
+                        <SelectGroup className='mt-2'>
+                          <SelectLabel>Countries</SelectLabel>
+                          {filteredCountries.map((country) => (
+                            <SelectItem
+                              key={country.code}
+                              value={country.dial_code}
+                            >
+                              <div className='flex items-center'>
+                                <span className='mr-2'>
+                                  {' '}
+                                  <Flag
+                                    code={country.code.toLowerCase()}
+                                    style={{ width: 20, height: 15 }}
+                                  />
+                                </span>
+                                {/* <span>{country.name}</span> */}
+                                <span className='ml-auto text-muted-foreground'>
+                                  {country.dial_code}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id='phoneNumber'
+                      name='phoneNumber'
+                      value={profileData.phoneNumber}
+                      onChange={handleInputChange}
+                      placeholder='Phone number'
+                      className='flex-1'
+                    />
+                  </div>
+                  <p className='text-xs text-muted-foreground'>
+                    Enter only digits, no spaces or special characters
+                  </p>
                 </div>
+
                 <div className='space-y-2'>
                   <Label htmlFor='location'>Location</Label>
                   <Input

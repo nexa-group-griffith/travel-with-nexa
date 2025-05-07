@@ -157,15 +157,15 @@ export default function AboutPage() {
             },
             {
               name: 'Osemwonken Godswill Osakue',
-              image: '/placeholder.webp?height=400&width=400',
+              image: 'Osemwonken Godswill Osakue.jpg?height=400&width=400',
             },
             {
               name: 'Ece Naz Olmez',
-              image: '/placeholder.webp?height=400&width=400',
+              image: 'Aj.jpeg?height=400&width=400',
             },
             {
               name: 'Olokunola Hussein Kehinde',
-              image: '/placeholder.webp?height=400&width=400',
+              image: 'Hussein Kehinde Olokunola.jpg?height=400&width=400',
             },
             {
               name: 'Ayooluwa Oyebowale',
