@@ -23,27 +23,22 @@ import {
 import { collection, doc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/lib/use-auth';
-import {
-  Attraction,
-  localGuide,
-  Restaurant,
-  TopDestination,
-  TripDetails,
-} from '@/lib/modes';
 import { marked } from 'marked';
 import { AttractionCard } from '@/components/attraction-card';
 import LocalGuides from '@/components/local-guides';
 import { RatingComponent } from '@/components/rating';
-import {
-  getTopDestinationsFromLocalStorage,
-  getUserDataFromLocalStorage,
-} from '@/lib/localstorage';
+import { getUserDataFromLocalStorage } from '@/lib/localstorage';
 import WeatherDashboard from '@/components/weather-detail';
 import MapView from '@/components/map-view';
-import { TripDetailsResponse } from '@/datamodels/tripmodels';
+import type { TripDetailsResponse } from '@/datamodels/tripmodels';
 import { FraudAlerts } from '@/components/fraud-alerts';
-import { AttractionResponse } from '@/datamodels/attractionsmodel';
+import type { AttractionResponse } from '@/datamodels/attractionsmodel';
 import Transportation from '@/components/transport';
+import { HotelCard } from '@/components/hotel-card';
+import { RestaurantCard } from '@/components/restaurant-card';
+import type { HotelResponse } from '@/datamodels/hotelmodels';
+import type { RestaurantResponse } from '@/datamodels/testraurantsmodel';
+import WishlistButton from '@/components/wishlist-button';
 
 export default function DestinationPage() {
   const { user } = useAuth();
@@ -203,6 +198,29 @@ export default function DestinationPage() {
                 <span className='font-medium'>{destination?.rating}</span>
                 <span className='ml-1 text-muted-foreground'> /5</span>
               </div>
+              <WishlistButton
+                itemId={params.id as string}
+                itemType='destination'
+                itemData={{
+                  id: params.id as string,
+                  name: placesDetails?.name || '',
+                  country:
+                    placesDetails?.formatted_address
+                      ?.split(',')
+                      .pop()
+                      ?.trim() || '',
+                  city:
+                    placesDetails?.formatted_address?.split(',')[0]?.trim() ||
+                    '',
+                  image: placesDetails?.photos?.[0] || '/placeholder.webp',
+                  description: destination?.overview || '',
+                  coordinates: {
+                    lat: placesDetails?.geometry?.location?.lat || 0,
+                    lng: placesDetails?.geometry?.location?.lng || 0,
+                  },
+                  rating: destination?.rating || 0,
+                }}
+              />
             </div>
             <span className='text-muted-foreground'>Languages</span>
             <div className='mb-6 flex flex-wrap gap-2 mt-2'>
@@ -243,20 +261,8 @@ export default function DestinationPage() {
               </div>
             )}
           </div>
-          {hasPlannedTrip && (
-            <div className='flex gap-2 mt-4'>
-              <Button
-                variant='outline'
-                className='flex items-center gap-1'
-              >
-                <Heart className='h-4 w-4' />
-                <span>Save</span>
-              </Button>
-            </div>
-          )}
         </div>
       </div>
-
       <Tabs
         defaultValue='overview'
         className='mt-8 w-full'
@@ -271,7 +277,6 @@ export default function DestinationPage() {
           <TabsTrigger value='weather'>Weather</TabsTrigger>
           <TabsTrigger value='alerts'>Alerts</TabsTrigger>
         </TabsList>
-
         <TabsContent value='overview'>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
             <Card className='md:col-span-1'>
@@ -373,7 +378,6 @@ export default function DestinationPage() {
             </div>
           </div>
         </TabsContent>
-
         <TabsContent value='attractions'>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
             {attractions?.map(
@@ -390,10 +394,42 @@ export default function DestinationPage() {
                 }
 
                 return (
-                  <AttractionCard
+                  <div
                     key={index}
-                    activity={attraction}
-                  />
+                    className='relative'
+                  >
+                    <AttractionCard activity={attraction} />
+                    <div className='absolute top-2 right-2'>
+                      <WishlistButton
+                        itemId={attraction.location_id}
+                        itemType='attraction'
+                        itemData={{
+                          id: attraction.location_id,
+                          name: attraction.name,
+                          country:
+                            attraction.address?.split(',').pop()?.trim() || '',
+                          city: attraction.address?.split(',')[0]?.trim() || '',
+                          image:
+                            attraction.photo?.images?.large?.url ||
+                            '/placeholder.webp',
+                          description: attraction.description || '',
+                          coordinates: {
+                            lat:
+                              typeof attraction.latitude === 'string'
+                                ? Number.parseFloat(attraction.latitude)
+                                : attraction.latitude || 0,
+                            lng:
+                              typeof attraction.longitude === 'string'
+                                ? Number.parseFloat(attraction.longitude)
+                                : attraction.longitude || 0,
+                          },
+                          rating: parseInt(attraction.rating || '4.5') || 0,
+                          address: attraction.address,
+                        }}
+                        size='icon'
+                      />
+                    </div>
+                  </div>
                 );
               }
             )}
@@ -422,9 +458,17 @@ export default function DestinationPage() {
                         )
                         .map((attraction: AttractionResponse) => ({
                           name: attraction?.name ?? 'Dublin',
-                          lat: parseFloat(attraction?.latitude ?? '0') ?? 0,
-                          lng: parseFloat(attraction?.longitude ?? '0') ?? 0,
-                          photoUrl: '/placeholder.webp',
+                          lat:
+                            typeof attraction?.latitude === 'string'
+                              ? Number.parseFloat(attraction.latitude)
+                              : attraction.latitude ?? 0,
+                          lng:
+                            typeof attraction?.longitude === 'string'
+                              ? Number.parseFloat(attraction.longitude)
+                              : attraction.longitude ?? 0,
+                          photoUrl:
+                            attraction?.photo?.images?.large?.url ??
+                            '/placeholder.webp',
                         })) ?? []
                     }
                   />
@@ -433,18 +477,61 @@ export default function DestinationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Hotels <TabsContent value='hotels'>
+        Hotels{' '}
+        <TabsContent value='hotels'>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
-            {destination?.itinerary?.travelPlan?.hotels?.map(
-              (hotel: any, index: number) => (
-                <HotelCard
-                  key={index}
-                  hotel={hotel}
-                  destination={destination.destination.name}
-                />
+            {hotels
+              ?.filter(
+                (hotel: HotelResponse) =>
+                  hotel &&
+                  hotel.address &&
+                  hotel.latitude &&
+                  hotel.longitude &&
+                  hotel.name &&
+                  hotel.location_id
               )
-            )}
+              ?.map((hotel: HotelResponse, index: number) => (
+                <div
+                  key={index}
+                  className='relative'
+                >
+                  <HotelCard
+                    key={index}
+                    hotel={hotel}
+                    destination={destination?.placesDetails?.name}
+                  />
+                  <div className='absolute top-2 right-2'>
+                    <WishlistButton
+                      itemId={hotel?.location_id || ' '}
+                      itemType='hotel'
+                      itemData={{
+                        id: hotel.location_id || '',
+                        name: hotel?.name || '',
+                        country: hotel.address?.split(',').pop()?.trim() || '',
+                        city: hotel.address?.split(',')[0]?.trim() || '',
+                        image:
+                          hotel.photo?.images?.large?.url ||
+                          '/placeholder.webp',
+                        description: hotel.description || '',
+                        coordinates: {
+                          lat:
+                            typeof hotel.latitude === 'string'
+                              ? Number.parseFloat(hotel.latitude)
+                              : hotel.latitude || 0,
+                          lng:
+                            typeof hotel.longitude === 'string'
+                              ? Number.parseFloat(hotel.longitude)
+                              : hotel.longitude || 0,
+                        },
+                        rating: parseInt(hotel.rating || '3') || 0,
+                        address: hotel.address,
+                        price: hotel.price || '',
+                      }}
+                      size='icon'
+                    />
+                  </div>
+                </div>
+              ))}
           </div>
           <Card className='mt-6 md:col-span-1'>
             <CardHeader className='pb-3'>
@@ -458,14 +545,30 @@ export default function DestinationPage() {
                 <div className='text-sm text-muted-foreground w-full h-[400px]'>
                   <MapView
                     places={
-                      destination.itinerary?.travelPlan?.hotels?.map(
-                        (attraction: any) => ({
-                          name: attraction?.hotelName ?? 'dublin',
-                          lat: attraction?.geoCoordinates?.latitude ?? 0,
-                          lng: attraction?.geoCoordinates?.longitude ?? 0,
-                          photoUrl: '/placeholder.webp',
-                        })
-                      ) ?? []
+                      hotels
+                        ?.filter(
+                          (hotel: HotelResponse) =>
+                            hotel &&
+                            hotel.address &&
+                            hotel.latitude &&
+                            hotel.longitude &&
+                            hotel.name &&
+                            hotel.location_id
+                        )
+                        ?.map((attraction: HotelResponse) => ({
+                          name: attraction?.name ?? 'dublin',
+                          lat:
+                            typeof attraction?.latitude === 'string'
+                              ? Number.parseFloat(attraction.latitude)
+                              : attraction.latitude ?? 0,
+                          lng:
+                            typeof attraction?.longitude === 'string'
+                              ? Number.parseFloat(attraction.longitude)
+                              : attraction.longitude ?? 0,
+                          photoUrl:
+                            attraction?.photo?.images?.large?.url ??
+                            '/placeholder.webp',
+                        })) ?? []
                     }
                   />
                 </div>
@@ -473,18 +576,61 @@ export default function DestinationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value='restaurants'>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
-            {destination?.itinerary?.travelPlan?.restaurants?.map(
-              (restaurant: Restaurant, index: number) => (
-                <RestaurantCard
-                  key={index}
-                  restaurant={restaurant}
-                  destination={destination.destination.name}
-                />
+            {restaurants
+              ?.filter(
+                (restaurant: RestaurantResponse) =>
+                  restaurant &&
+                  restaurant.address &&
+                  restaurant.latitude &&
+                  restaurant.longitude &&
+                  restaurant.name &&
+                  restaurant.location_id
               )
-            )}
+              .map((restaurant: RestaurantResponse, index: number) => (
+                <div
+                  key={index}
+                  className='relative'
+                >
+                  <RestaurantCard
+                    key={index}
+                    restaurant={restaurant}
+                    destination={destination.placesDetails?.name}
+                  />
+                  <div className='absolute top-2 right-2'>
+                    <WishlistButton
+                      itemId={restaurant.location_id}
+                      itemType='restaurant'
+                      itemData={{
+                        id: restaurant.location_id,
+                        name: restaurant.name,
+                        country:
+                          restaurant.address?.split(',').pop()?.trim() || '',
+                        city: restaurant.address?.split(',')[0]?.trim() || '',
+                        image:
+                          restaurant.photo?.images?.large?.url ||
+                          '/placeholder.webp',
+                        description: restaurant.description || '',
+                        coordinates: {
+                          lat:
+                            typeof restaurant.latitude === 'string'
+                              ? Number.parseFloat(restaurant.latitude)
+                              : restaurant.latitude || 0,
+                          lng:
+                            typeof restaurant.longitude === 'string'
+                              ? Number.parseFloat(restaurant.longitude)
+                              : restaurant.longitude || 0,
+                        },
+                        rating: parseInt(restaurant?.ranking || '4') || 0,
+                        address: restaurant.address,
+                        price: restaurant.price_level || '',
+                      }}
+                      size='icon'
+                    />
+                  </div>
+                </div>
+              ))}
           </div>
           <Card className='mt-6 md:col-span-1'>
             <CardHeader className='pb-3'>
@@ -498,14 +644,30 @@ export default function DestinationPage() {
                 <div className='text-sm text-muted-foreground w-full h-[400px]'>
                   <MapView
                     places={
-                      destination.itinerary?.travelPlan?.hotels?.map(
-                        (attraction: any) => ({
-                          name: attraction?.hotelName ?? 'dublin',
-                          lat: attraction?.geoCoordinates?.latitude ?? 0,
-                          lng: attraction?.geoCoordinates?.longitude ?? 0,
-                          photoUrl: '/placeholder.webp',
-                        })
-                      ) ?? []
+                      restaurants
+                        ?.filter(
+                          (restaurant: RestaurantResponse) =>
+                            restaurant &&
+                            restaurant.address &&
+                            restaurant.latitude &&
+                            restaurant.longitude &&
+                            restaurant.name &&
+                            restaurant.location_id
+                        )
+                        .map((attraction: RestaurantResponse) => ({
+                          name: attraction?.name ?? 'dublin',
+                          lat:
+                            typeof attraction?.latitude === 'string'
+                              ? Number.parseFloat(attraction.latitude)
+                              : attraction.latitude ?? 0,
+                          lng:
+                            typeof attraction?.longitude === 'string'
+                              ? Number.parseFloat(attraction.longitude)
+                              : attraction.longitude ?? 0,
+                          photoUrl:
+                            attraction?.photo?.images?.large?.url ??
+                            '/placeholder.webp',
+                        })) ?? []
                     }
                   />
                 </div>
@@ -513,7 +675,6 @@ export default function DestinationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-*/}
         <TabsContent value='travel-info'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div className='space-y-6'>
@@ -607,7 +768,6 @@ export default function DestinationPage() {
             )}
           </div>
         </TabsContent>
-
         <TabsContent value='reviews'>
           <Card>
             <CardHeader>
