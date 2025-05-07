@@ -8,8 +8,8 @@ interface Address {
 }
 
 interface Booking {
-  provider: string;
-  url: string;
+  provider?: string;
+  url?: string;
 }
 
 interface Category {

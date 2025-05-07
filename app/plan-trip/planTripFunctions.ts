@@ -1,8 +1,8 @@
-import { PlaceResult } from '@/components/place-search';
-import { AttractionResponse } from '@/datamodels/attractionsmodel';
-import { hotelKeys, HotelResponse } from '@/datamodels/hotelmodels';
-import { RestaurantResponse } from '@/datamodels/testraurantsmodel';
-import {
+import type { PlaceResult } from '@/components/place-search';
+import type { AttractionResponse } from '@/datamodels/attractionsmodel';
+import type { HotelResponse } from '@/datamodels/hotelmodels';
+import type { RestaurantResponse } from '@/datamodels/testraurantsmodel';
+import type {
   OtherDetailsResponse,
   TripDetailsResponse,
 } from '@/datamodels/tripmodels';
@@ -10,22 +10,22 @@ import { toast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import {
   generateLocalGuides,
-  localGuideResponse,
+  type localGuideResponse,
 } from '@/lib/generate-local-guides';
 import { generateTripItinerary } from '@/lib/generate-trip-itinerary';
 import {
-  getHotelsByLocationId,
-  getPlaceDetails,
   getPlacesBYBoundary,
   getPlacesBYBoundaryType,
   getPlacesByLatLong,
-  getTourGuidesData,
-  getTravelAdvisorLocationId,
 } from '@/lib/get-travel-adviser-data';
-import axios from 'axios';
-import { User } from 'firebase/auth';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
-import { Dispatch, SetStateAction } from 'react';
+import {
+  getFallbackHotels,
+  getFallbackRestaurants,
+  getFallbackAttractions,
+} from '@/lib/static-fallback-data';
+import type { User } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import type { Dispatch, SetStateAction } from 'react';
 import { v4 } from 'uuid';
 
 interface TripParams {
@@ -62,14 +62,6 @@ export const handleCreateTripFunction = async ({
     setError('Please select a destination');
     return null;
   }
-  console.log(
-    'handleCreateTrip',
-    destination,
-    days,
-    travelers,
-    budget,
-    interests
-  );
 
   if (!dateRange.from || !dateRange.to) {
     setError('Please select travel dates');
@@ -173,6 +165,41 @@ export const handleCreateTripFunction = async ({
     );
     const flattenArray = (arr: any[]) => arr.map((item) => ({ ...item }));
 
+    // Use fallback data if API results are empty
+    const hotels = [
+      ...flattenArray(hotelsData?.length ? hotelsData : hotelsData1),
+    ];
+    const finalHotels =
+      hotels.length > 0
+        ? hotels
+        : getFallbackHotels(
+            destination?.formatted_address || destination?.name
+          );
+
+    const restaurants = [
+      ...flattenArray(
+        restaurantsData?.length > 0 ? restaurantsData : restaurantsData1
+      ),
+    ];
+    const finalRestaurants =
+      restaurants.length > 0
+        ? restaurants
+        : getFallbackRestaurants(
+            destination?.formatted_address || destination?.name
+          );
+
+    const attractions = [
+      ...flattenArray(
+        attractionsData?.length > 0 ? attractionsData : attractionsData1
+      ),
+    ];
+    const finalAttractions =
+      attractions.length > 0
+        ? attractions
+        : getFallbackAttractions(
+            destination?.formatted_address || destination?.name
+          );
+
     const tripId = v4();
     if (db) {
       const tripData: TripDetailsResponse = {
@@ -188,19 +215,9 @@ export const handleCreateTripFunction = async ({
         budget,
         interests,
         createdAt: new Date().toISOString(),
-        hotels: [
-          ...flattenArray(hotelsData?.length ? hotelsData : hotelsData1),
-        ],
-        restaurants: [
-          ...flattenArray(
-            restaurantsData?.length > 0 ? restaurantsData : restaurantsData1
-          ),
-        ],
-        attractions: [
-          ...flattenArray(
-            attractionsData?.length > 0 ? attractionsData : attractionsData1
-          ),
-        ],
+        hotels: finalHotels,
+        restaurants: finalRestaurants,
+        attractions: finalAttractions,
         ...otherDetails,
         transportation: otherDetails.transportation,
         fraudAlerts: otherDetails.fraudAlerts,

@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         location: userData.location || '',
         phoneNumber: userData.phoneNumber || '',
         settings: userData.settings || {},
+        countryCode: userData.countryCode || '',
       },
     });
   } catch (error: any) {
@@ -71,13 +72,15 @@ export async function PUT(request: NextRequest) {
       );
     }
     const data = await request.json();
-    const { displayName, bio, location, phoneNumber, photoURL } = data;
+    const { displayName, bio, location, phoneNumber, photoURL, countryCode } =
+      data;
 
     await updateDoc(doc(db, 'users', userId), {
       displayName: displayName || '',
       bio,
       location,
       phoneNumber,
+      countryCode,
       updatedAt: new Date().toISOString(),
       ...(photoURL && { photoURL }),
     });

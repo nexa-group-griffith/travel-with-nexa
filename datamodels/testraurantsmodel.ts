@@ -28,11 +28,12 @@ interface Hours {
 }
 
 interface Photo {
-  images?: {
-    small?: string;
-    medium?: string;
-    large?: string;
-    original?: string;
+  images: {
+    large?: { width: string; url: string; height: string };
+    medium?: { width: string; url: string; height: string };
+    original?: { width: string; url: string; height: string };
+    small?: { width: string; url: string; height: string };
+    thumbnail?: { width: string; url: string; height: string };
   };
   is_blessed?: boolean;
   uploaded_date?: string;
