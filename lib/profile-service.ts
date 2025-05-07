@@ -8,6 +8,7 @@ export interface ProfileData {
   bio: string;
   location: string;
   phoneNumber: string;
+  countryCode?: string;
   settings?: any;
 }
 
@@ -16,6 +17,7 @@ export interface ProfileUpdateData {
   bio?: string;
   location?: string;
   phoneNumber?: string;
+  countryCode?: string;
   photoURL?: string;
 }
 

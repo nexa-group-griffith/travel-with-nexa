@@ -18,14 +18,14 @@ import WeatherDashboard from '@/components/weather-detail';
 import { tripsService } from '@/lib/trips-service';
 import { wishlistService } from '@/lib/wishlist-service';
 import { authService } from '@/lib/auth-service';
-import type { Trip } from '@/types/trips';
 import type { WishlistItem } from '@/types/wishlist';
 import { useToast } from '@/hooks/use-toast';
+import { TripDetailsResponse } from '@/datamodels/tripmodels';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<TripDetailsResponse[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export default function DashboardPage() {
       </div>
     );
   }
-
+  console.log('trips', trips);
   return (
     <div className='container py-10'>
       <div className='mb-8'>
@@ -152,7 +152,7 @@ export default function DashboardPage() {
                       <div className='flex flex-col sm:flex-row'>
                         <div className='p-4 sm:w-2/3'>
                           <h3 className='text-xl font-semibold'>
-                            Trip to {trip.destination.name}
+                            Trip to {trip?.placesDetails?.name}
                           </h3>
                           <div className='mb-2 flex items-center text-sm text-muted-foreground'>
                             <Calendar className='mr-2 h-4 w-4' />
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                             {trip.dates.days} days)
                           </div>
                           <p className='mb-4 text-sm text-muted-foreground'>
-                            {trip.itinerary.overview}
+                            {trip?.overview}
                           </p>
                           <Button asChild>
                             <Link href={`/trips/${trip.id}`}>
@@ -174,10 +174,10 @@ export default function DashboardPage() {
                         <div className='relative h-40 sm:h-auto sm:w-1/3'>
                           <Image
                             src={
-                              trip.destination.photos?.[0] ||
+                              trip?.placesDetails?.photos?.[0] ||
                               '/placeholder.svg?height=200&width=300&query=travel'
                             }
-                            alt={trip.destination.name}
+                            alt={trip?.placesDetails?.name}
                             fill
                             className='object-cover'
                           />
@@ -213,7 +213,7 @@ export default function DashboardPage() {
             <CardContent>
               {wishlist?.length > 0 ? (
                 <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-                  {wishlist.map((item) => (
+                  {wishlist?.map((item) => (
                     <Card
                       key={item.id}
                       className='overflow-hidden hover:shadow-md transition-shadow'
@@ -221,21 +221,21 @@ export default function DashboardPage() {
                       <div className='relative h-48'>
                         <Image
                           src={
-                            item.image ||
+                            item?.image ||
                             '/placeholder.svg?height=200&width=300&query=destination'
                           }
-                          alt={item.name}
+                          alt={item?.name}
                           fill
                           className='object-cover'
                         />
                       </div>
                       <CardContent className='p-4'>
-                        <h3 className='font-semibold text-lg'>{item.name}</h3>
+                        <h3 className='font-semibold text-lg'>{item?.name}</h3>
                         <p className='text-sm text-muted-foreground mb-2'>
-                          {item.country}
+                          {item?.country}
                         </p>
                         <p className='text-sm line-clamp-2 mb-4'>
-                          {item.description}
+                          {item?.description}
                         </p>
                         <div className='flex gap-2'>
                           <Button

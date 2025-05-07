@@ -1,7 +1,7 @@
-import { PlaceResult } from '@/components/place-search';
 import { RestaurantResponse } from './testraurantsmodel';
 import { HotelResponse } from './hotelmodels';
 import { AttractionResponse } from './attractionsmodel';
+import { PlaceResult } from '@/components/place-search';
 import { localGuideResponse } from '@/lib/generate-local-guides';
 
 export interface TripDetailsResponse {
@@ -49,6 +49,7 @@ export interface TripDetailsResponse {
 }
 
 export interface OtherDetailsResponse {
+  rating: number;
   overview: string;
   reviews?: { rating: number; review: string; reviewer: string }[];
   securityAlerts?: {
@@ -62,7 +63,7 @@ export interface OtherDetailsResponse {
     title: string;
     description: string;
     severity: string;
-  };
+  }[];
   currency: string;
   currencyCode: string;
   currencySymbol: string;
@@ -72,5 +73,5 @@ export interface OtherDetailsResponse {
     type: string;
     name: string;
     description: string;
-  };
+  }[];
 }
