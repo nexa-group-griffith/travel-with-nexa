@@ -61,59 +61,45 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<AddToWishlistResponse>> {
   try {
-    const user = await getCurrentUser();
-
-    if (!user) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized', item: {} as WishlistItem },
+        { success: false, message: 'Unauthorized', items: [] },
+        { status: 401 }
+      );
+    }
+    const userId = authHeader.split('Bearer ')[1];
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized', items: [] },
         { status: 401 }
       );
     }
 
-    const { destinationId }: AddToWishlistRequest = await request.json();
+    const { itemId, itemType, item }: AddToWishlistRequest =
+      await request.json();
 
-    if (!destinationId) {
+    if (!itemId || !itemType || !item) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Destination ID is required',
+          message: 'Invalid request data',
           item: {} as WishlistItem,
         },
         { status: 400 }
       );
     }
 
-    // Get destination details
-    const destinationDoc = await getDoc(doc(db, 'destinations', destinationId));
-
-    if (!destinationDoc.exists()) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Destination not found',
-          item: {} as WishlistItem,
-        },
-        { status: 404 }
-      );
-    }
-
-    const destination = destinationDoc.data();
-
     // Create wishlist item
     const wishlistItem: WishlistItem = {
-      id: destinationId,
-      name: destination.name,
-      country: destination.country,
-      city: destination.city,
-      image: destination.imageUrl || '',
-      description: destination.description || '',
+      ...item,
+      id: itemId,
+      type: itemType,
       addedAt: new Date().toISOString(),
-      coordinates: destination.coordinates,
-      tags: destination.tags,
     };
 
     // Add to user's wishlist
-    await updateDoc(doc(db, 'users', user.uid), {
+    await updateDoc(doc(db, 'users', userId), {
       wishlist: arrayUnion(wishlistItem),
     });
 
