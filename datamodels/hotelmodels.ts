@@ -1,4 +1,5 @@
 export interface HotelResponse {
+  id?: string;
   name?: string;
   address?: string;
   location_id?: string;
@@ -19,10 +20,11 @@ export interface HotelResponse {
   web_url?: string;
   photo?: {
     images?: {
-      large?: { url?: string };
-      medium?: { url?: string };
-      small?: { url?: string };
-      thumbnail?: { url?: string };
+      small?: { url?: string; width?: string; height?: string };
+      medium?: { url?: string; width?: string; height?: string };
+      large?: { url?: string; width?: string; height?: string };
+      original?: { url?: string; width?: string; height?: string };
+      thumbnail?: { url?: string; width?: string; height?: string };
     };
     caption?: string;
   };
@@ -30,7 +32,6 @@ export interface HotelResponse {
   open_now_text?: string;
   hours?: {
     timezone?: string;
-    week_ranges?: Array<{ open_time?: number; close_time?: number }[]>;
   };
 }
 

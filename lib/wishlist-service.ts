@@ -1,48 +1,68 @@
-import { apiClient } from "./api-client"
+import { apiClient } from './api-client';
 import type {
   WishlistResponse,
   AddToWishlistRequest,
   AddToWishlistResponse,
   RemoveFromWishlistResponse,
   WishlistItem,
-} from "@/types/wishlist"
+} from '@/types/wishlist';
 
 export const wishlistService = {
   getWishlist: async (): Promise<WishlistResponse> => {
     try {
-      return await apiClient.get<WishlistResponse>("/api/wishlist")
+      return await apiClient.get<WishlistResponse>('/api/wishlist');
     } catch (error) {
-      console.error("Get wishlist error:", error)
+      console.error('Get wishlist error:', error);
       return {
         success: false,
-        message: (error as Error).message || "Failed to fetch wishlist",
+        message: (error as Error).message || 'Failed to fetch wishlist',
         items: [],
-      }
+      };
     }
   },
 
-  addToWishlist: async (data: AddToWishlistRequest): Promise<AddToWishlistResponse> => {
+  addToWishlist: async (
+    data: AddToWishlistRequest
+  ): Promise<AddToWishlistResponse> => {
     try {
-      return await apiClient.post<AddToWishlistResponse>("/api/wishlist", data)
+      return await apiClient.post<AddToWishlistResponse>('/api/wishlist', data);
     } catch (error) {
-      console.error("Add to wishlist error:", error)
+      console.error('Add to wishlist error:', error);
       return {
         success: false,
-        message: (error as Error).message || "Failed to add item to wishlist",
+        message: (error as Error).message || 'Failed to add item to wishlist',
         item: {} as WishlistItem,
-      }
+      };
     }
   },
 
-  removeFromWishlist: async (itemId: string): Promise<RemoveFromWishlistResponse> => {
+  removeFromWishlist: async (
+    itemId: string
+  ): Promise<RemoveFromWishlistResponse> => {
     try {
-      return await apiClient.delete<RemoveFromWishlistResponse>(`/api/wishlist/${itemId}`)
+      return await apiClient.delete<RemoveFromWishlistResponse>(
+        `/api/wishlist/${itemId}`
+      );
     } catch (error) {
-      console.error("Remove from wishlist error:", error)
+      console.error('Remove from wishlist error:', error);
       return {
         success: false,
-        message: (error as Error).message || "Failed to remove item from wishlist",
-      }
+        message:
+          (error as Error).message || 'Failed to remove item from wishlist',
+      };
     }
   },
-}
+
+  isInWishlist: async (itemId: string): Promise<boolean> => {
+    try {
+      const response = await wishlistService.getWishlist();
+      if (response.success && response.items) {
+        return response.items.some((item) => item.id === itemId);
+      }
+      return false;
+    } catch (error) {
+      console.error('Check wishlist error:', error);
+      return false;
+    }
+  },
+};
